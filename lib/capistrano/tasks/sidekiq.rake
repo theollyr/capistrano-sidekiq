@@ -48,7 +48,7 @@ namespace :sidekiq do
         when :upstart
           sudo :service, fetch(:upstart_service_name), :reload
         else
-          if test("[ -d #{release_path} ]")
+          if test("[ -d #{fetch(:sidekiq_target_path, release_path)} ]")
             each_process_with_index(reverse: true) do |pid_file, _idx|
               if pid_file_exists?(pid_file) && process_exists?(pid_file)
                 quiet_sidekiq(pid_file)
@@ -70,7 +70,7 @@ namespace :sidekiq do
         when :upstart
           sudo :service, fetch(:upstart_service_name), :stop
         else
-          if test("[ -d #{release_path} ]")
+          if test("[ -d #{fetch(:sidekiq_target_path, release_path)} ]")
             each_process_with_index(reverse: true) do |pid_file, _idx|
               if pid_file_exists?(pid_file) && process_exists?(pid_file)
                 stop_sidekiq(pid_file)
@@ -177,7 +177,7 @@ namespace :sidekiq do
     pid_file_list = pid_files
     pid_file_list.reverse! if reverse
     pid_file_list.each_with_index do |pid_file, idx|
-      within release_path do
+      within fetch(:sidekiq_target_path, release_path) do
         yield(pid_file, idx)
       end
     end
